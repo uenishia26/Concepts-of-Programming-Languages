@@ -17,5 +17,7 @@
 
 *)
 
-let sqrt (n : int) : int =
-  (* YOUR CODE GOES HERE *) 
+let sqrt (n : int) : int = 
+   if n >= 0 then 
+      int_of_float(Float.ceil(Float.sqrt (float_of_int n))) (*take an int convert to flowm, take the sqrt, take the ceiling of that value then convert to int*)
+   else raise (Invalid_argument "Number must be a value >=0") (*Throw an invalid argument statemenet*)
