@@ -13,7 +13,7 @@
    Examples without whole square roots:
    sqrt 2 = 2        (smallest number i such that 2 <= i * i is 2)
    sqrt 10 = 4       (smallest number i such that 10 <= i * i is 4)
-   sqrt 99 = 10      (smallest number i such that 99 <= i * i is 10)
+   sqrt 99 = 10      (smallest number i such that 99 <= i * i is 10) // (Anamu)
 
 *)
 
