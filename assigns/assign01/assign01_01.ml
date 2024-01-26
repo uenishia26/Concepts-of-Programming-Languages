@@ -23,3 +23,4 @@
 
 let string_rev (s : string) : string =
   assert false (* REMOVE THIS LINE AND FILL IN YOUR SOLUTION *)
+(*Veryify connection*)
