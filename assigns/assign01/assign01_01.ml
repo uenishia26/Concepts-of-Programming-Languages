@@ -21,6 +21,18 @@
 
  *)
 
-let string_rev (s : string) : string =
-  assert false (* REMOVE THIS LINE AND FILL IN YOUR SOLUTION *)
-(*Veryify connection*)
+ let string_rev(s : string) : string =
+  if String.length s <= 0 then "" (*Case when you get an empty string *)
+  else 
+    let rec loop str: string = (*Recursive function that gets the substring until 1 char left*)
+      if String.length str = 1 then String.sub s 0 1 
+      else 
+        (String.sub str (String.length str - 1) 1) ^ loop(String.sub str 0 (String.length str - 1)) (*Concatenate + rest of string - 1*)
+    in  (*End the rec loop here / scoping *)
+    loop s;; (*Call the loop function on s*)
+
+
+
+
+
+
