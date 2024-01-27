@@ -22,14 +22,14 @@
    let _ = assert (fast_fib 5 = 8)
 
  *)
-
+(*This implementation is *)
 let fast_fib (n : int) : int =
   if n = 0 || n = 1 then 1 (*If n = 0 or 1 just return 1*)
   else
     let rec fibrec x y sum counter: int = (*x and y start with 1 and 1*)
-      if counter = n then sum 
+      if counter = n then sum  (*return sum*)
       else
-        fibrec y sum (y+sum) (counter+1)
-    in fibrec 1 1 2 2;;
+        fibrec y sum (y+sum) (counter+1) (*Keeps track of previous fib value, x, y, counter. Correctly computes*)
+    in fibrec 1 1 2 2;; (*Starting with values of fib 2*)
     
 
