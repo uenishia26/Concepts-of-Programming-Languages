@@ -15,4 +15,15 @@
  *)
 
 let is_perfect (n : int) : bool =
-  assert false (* REMOVE THIS LINE AND FILL IN YOUR SOLUTION *)
+  if n <= 1 then false (*Taking care of base cases *)
+  else 
+    let rec loop div sum: bool = (*Recursive function*)
+      if div = 1 then (*Base case when divisor reaches 1*)
+        if sum+1 = n then true (*Check if sum = n /Need + 1 cause 1 divsor of all numbers >1*)
+        else false 
+      else 
+        if n mod div = 0 then loop (div-1) (sum+(div)) (*If number can be divided we add it otherwise move to next divsior (-1 current divisor)*)
+        else loop (div-1) (sum)
+    in loop(n-1) 0;; (*Start with n-1 and 0 as the sum*)
+
+
