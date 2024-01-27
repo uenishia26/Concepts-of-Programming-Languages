@@ -24,4 +24,12 @@
  *)
 
 let fast_fib (n : int) : int =
-  assert false (* REMOVE THIS LINE AND FILL IN YOUR SOLUTION *)
+  if n = 0 || n = 1 then 1 (*If n = 0 or 1 just return 1*)
+  else
+    let rec fibrec x y sum counter: int = (*x and y start with 1 and 1*)
+      if counter = n then sum 
+      else
+        fibrec y sum (y+sum) (counter+1)
+    in fibrec 1 1 2 2;;
+    
+
