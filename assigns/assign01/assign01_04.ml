@@ -17,4 +17,25 @@
  *)
 
 let taxicab (n : int) : int =
-  assert false (* REMOVE THIS LINE AND FILL IN YOUR SOLUTION *)
+  if n = 2 then 1
+  else 
+    let rec loop a b counter: int = 
+      let upperBound = int_of_float(float_of_int(n) ** (1.0 /. 3.0)) in 
+      if a = upperBound (*When a reaches the upperBound terminate loop *)
+        then 
+          counter
+      else
+        if b = upperBound then loop (a+1) 1 counter (*Reset b with inc a*)
+        else 
+          if (a * a * a) + (b * b * b) = n then
+            loop a (b+1) (counter+1)
+          else loop a (b+1) (counter)
+    in loop 1 1 0;;
+
+
+
+
+   
+  
+
+
