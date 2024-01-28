@@ -30,39 +30,33 @@
    - `String.length`
 
    Examples:
-   let _ = assert (block_text "ABCDEFGHIJ" 0 3 = "ABC\nDEF\nGHI\nJ")
+   let _ = assert (block_text "ABCDEFGHIJ" 0 3 = "ABC\nDEF\nGHI\nJ")  DONE
    let _ = assert (block_text "ABCDEFGHIJ" 2 3 = "AB\nCD\nEF\nGH\nIJ")
-   let _ = assert (block_text "ABCDEFGHIJ" 0 4 = "ABCD\nEFGH\nIJ")
-   let _ = assert (block_text "ABDFEFGHIJ" 3 4 = "ABCD\nEFGH\nIJ")
+   let _ = assert (block_text "ABCDEFGHIJ" 0 4 = "ABCD\nEFGH\nIJ")   DONE
+   let _ = assert (block_text "ABDFEFGHIJ" 3 4 = "ABCD\nEFGH\nIJ")   
 
+   ABC, def, GHI, J 1 < 2
  *)
 
 let block_text (s : string) (min_width : int) (max_width : int) : string =
     (*If divisible by max_width, we don't care about the min_width requirment *)
-  if (String.length s) mod (max_width) = 0 then
+  let rec subStringloop x y index currentStr : string = (*Parameters here are start position for substring, max_width counter and newStr*)
 
-
-    
-    let rec subStringloop x y counter currentStr : string = (*Parameters here are start position for substring, max_width counter and newStr*)
-      if counter = (String.length s) / max_width then (*Base case we return the string*)
-        currentStr
-      else (*Two cases for concatenation. Looking out for last case so we don't add \n in the last line vs all the other cases*)
-        if (counter+1) = (String.length s) / max_width then 
-          subStringloop (x+y) y (counter+1) (currentStr ^ (String.sub s x y)) (*We don't add \n to the last line *)
-        else subStringloop (x+y) y (counter+1) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n to the last line *)
-    in subStringloop 0 max_width 0 ""
-
-  (*When string not divisble by max_width we have two case
-     1) remainder after mod with max > min width
-     2) remainder after mod with max < min width*)
-  else
-    if (String.length s) mod (max_width) > min_width then
-      let rec subStringlooptwo x y counter current:Str : String = 
+    (*When counter equals length of s we reached base case *)
+    if index = String.length s then
+      currentStr
+    else                
+      if (String.length s) mod (max_width) = 0 then 
+        subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*)
+      else if ((String.length s) mod (max_width)) > min_width then (*If the remainder is smaller than the minimum width required*)
+        if(index + y) > String.length s then (*If adding max width produce out of bounds, we just wanna concatenate the remaining end BASE CASE*)
+          subStringloop (x+y) y (index+((String.length s) - index)) (currentStr ^ (String.sub s x ((String.length s) - index)))
+         else
+          subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*) 
+      else  (*Case where the remainder after divsion is greater than the minimum width*)
+        "fuck you"
         
 
-      in subStringlooptwo 
+  in subStringloop 0 max_width 0 "";; (*X = starting point, Y = maxWidth value, index = 0, currentStr = ""*)
 
-
-
-      
 
