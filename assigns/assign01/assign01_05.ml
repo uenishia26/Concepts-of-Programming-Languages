@@ -54,9 +54,14 @@ let block_text (s : string) (min_width : int) (max_width : int) : string =
          else
           subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*) 
       else  (*Case where the remainder after divsion is greater than the minimum width*)
-        "fuck you"
-        
-
+        if (String.length s) mod min_width = 0 then
+          subStringloop (x+min_width) y (index+min_width) (currentStr ^ (String.sub s x min_width) ^ "\n")
+        else 
+          if(index + y) > String.length s then (*If adding max width produce out of bounds, we just wanna concatenate the remaining end BASE CASE*)
+            subStringloop (x+y) y (index+((String.length s) - index)) (currentStr ^ (String.sub s x ((String.length s) - index)))
+           else
+            subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*) 
+          
   in subStringloop 0 max_width 0 "";; (*X = starting point, Y = maxWidth value, index = 0, currentStr = ""*)
 
 
