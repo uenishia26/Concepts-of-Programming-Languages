@@ -44,7 +44,11 @@ let block_text (s : string) (min_width : int) (max_width : int) : string =
 
     (*When counter equals length of s we reached base case *)
     if index = String.length s then
-      currentStr
+      if String.length currentStr > 0 && currentStr.[String.length currentStr - 1] = '\n' then
+        String.sub currentStr 0 (String.length currentStr - 1)
+      else 
+        currentStr
+    
     else                
       if (String.length s) mod (max_width) = 0 then 
         subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*)
