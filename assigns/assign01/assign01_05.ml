@@ -40,6 +40,9 @@
 let block_text (s : string) (min_width : int) (max_width : int) : string =
     (*If divisible by max_width, we don't care about the min_width requirment *)
   if (String.length s) mod (max_width) = 0 then
+
+
+    
     let rec subStringloop x y counter currentStr : string = (*Parameters here are start position for substring, max_width counter and newStr*)
       if counter = (String.length s) / max_width then (*Base case we return the string*)
         currentStr
@@ -56,7 +59,7 @@ let block_text (s : string) (min_width : int) (max_width : int) : string =
     if (String.length s) mod (max_width) > min_width then
       let rec subStringlooptwo x y counter current:Str : String = 
         
-        
+
       in subStringlooptwo 
 
 
