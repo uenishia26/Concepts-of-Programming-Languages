@@ -44,6 +44,8 @@ let block_text (s : string) (min_width : int) (max_width : int) : string =
 
     if s = "" then 
       ""
+    else if (max_width >= String.length s) then
+      s
     else 
     (*When counter equals length of s we reached base case *)
     if index = String.length s then
@@ -53,17 +55,20 @@ let block_text (s : string) (min_width : int) (max_width : int) : string =
         currentStr
     
     else                
-      if (String.length s) mod (max_width) = 0 then 
+      if (String.length s) mod (max_width) = 0 then (*If divisible by max width, every line is maxwidth long*)
         subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*)
-      else if ((String.length s) mod (max_width)) > min_width then (*If the remainder is smaller than the minimum width required*)
+
+      else if ((String.length s) mod (max_width)) >= min_width then (*If the remainder is greater or equal to the minimum width required*)
         if(index + y) > String.length s then (*If adding max width produce out of bounds, we just wanna concatenate the remaining end BASE CASE*)
           subStringloop (x+y) y (index+((String.length s) - index)) (currentStr ^ (String.sub s x ((String.length s) - index)))
          else
           subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*) 
-      else  (*Case where the remainder after divsion is greater than the minimum width*)
-        if (String.length s) mod min_width = 0 then
+
+      else  (*Case where the remainder after divsion is less than the minimum width*)
+        if (String.length s) mod min_width = 0 then 
           subStringloop (x+min_width) y (index+min_width) (currentStr ^ (String.sub s x min_width) ^ "\n")
         else 
+          (*case where remainder after division *)
           if(index + y) > String.length s then (*If adding max width produce out of bounds, we just wanna concatenate the remaining end BASE CASE*)
             subStringloop (x+y) y (index+((String.length s) - index)) (currentStr ^ (String.sub s x ((String.length s) - index)))
            else
