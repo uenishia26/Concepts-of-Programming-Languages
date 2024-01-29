@@ -42,11 +42,7 @@ let block_text (s : string) (min_width : int) (max_width : int) : string =
     (*If divisible by max_width, we don't care about the min_width requirment *)
   let rec subStringloop x y index currentStr : string = (*Parameters here are start position for substring, max_width counter and newStr*)
 
-    if s = "" then 
-      ""
-    else if (max_width >= String.length s) then
-      s
-    else 
+    
     (*When counter equals length of s we reached base case *)
     if index = String.length s then
       if String.length currentStr > 0 && currentStr.[String.length currentStr - 1] = '\n' then
@@ -54,7 +50,7 @@ let block_text (s : string) (min_width : int) (max_width : int) : string =
       else 
         currentStr
     
-    else                
+    else            
       if (String.length s) mod (max_width) = 0 then (*If divisible by max width, every line is maxwidth long*)
         subStringloop (x+y) y (index+max_width) (currentStr ^ (String.sub s x y) ^ "\n") (*We add \n*)
 
