@@ -41,8 +41,7 @@
 let block_text (s : string) (min_width : int) (max_width : int) : string =
     (*If divisible by max_width, we don't care about the min_width requirment *)
    (*Fixing edge cases*) 
-  if s = "" then "" else if max_width <= 0 || min_width < 0 then
-   raise (InvalidInput "Not a valid argument")
+  if s = "" then "" 
   else  
     
   let rec subStringloop x y index currentStr : string = (*Parameters here are start position for substring, max_width counter and newStr*)
