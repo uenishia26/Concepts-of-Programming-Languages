@@ -28,18 +28,20 @@ type recipe = {
   name : string ;
   ingrs : ingr list;
 }
+(*Basically using filtering techniques*)
+
 let recs_by_ingrs (l : recipe list) (s : ingr list) : recipe list =
   let rec recipe_filter recipes = 
     match recipes with
-    | [] -> []
-    | r :: rs -> 
+    | [] -> [] (*Base case*)
+    | r :: rs -> (*r = current recipe, rs = rest of the recipes*)
       let rec iterateIngredients list = 
         match list with
-        | [] -> true
-        | head :: tail -> 
+        | [] -> true (*If zero elements left and its still true means every item existed in the required ingredient list*)
+        | head :: tail ->  (*If doesn't exist just move onto next recipe*)
           if List.mem head s = false then false else iterateIngredients tail
       in 
-      if iterateIngredients r.ingrs = true then r :: recipe_filter rs 
-      else recipe_filter rs
+      if iterateIngredients r.ingrs = true then r :: recipe_filter rs (*If true, we want to add the recipe else don't*)
+      else recipe_filter rs 
   in recipe_filter l;;
 
