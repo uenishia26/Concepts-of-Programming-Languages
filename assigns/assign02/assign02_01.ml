@@ -22,5 +22,33 @@ type int_or_string
   = Int of int
   | String of string
 
+
 let convert (l : int_or_string list) : int_list_or_string_list list =
+  let rec loop int_or_string current_int current_string acc = 
+    match int_or_string with
+      | [] ->  (*If the int_or_string list empty *)
+        if current_int <> [] then (*Append any remaining items either in current_int or current_string list*)
+          IntList (current_int) :: acc 
+        else if current_string <> [] then 
+          StringList (current_string) :: acc
+        else 
+          acc
+      | h :: t -> 
+          match h with 
+            | Int i -> 
+              if current_int = [] && current_string <> [] then
+                  loop t (i :: current_int) [] (StringList (current_string) :: acc) 
+              else 
+                loop t (i :: current_int) [] acc
+            | String s -> 
+              if current_string = [] && current_int <> [] then
+                loop t [] (s :: current_string) (IntList (current_int) :: acc)
+              else 
+                loop t [] (s :: current_string) acc
+    in loop l [] [] [];;
+              
+
+                 
+
+
   
