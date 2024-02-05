@@ -35,12 +35,12 @@ let reverse_list revList =
 
 
 let convert (l : int_or_string list) : int_list_or_string_list list =
-  if l = [] then 
+  if l = [] then (*If its an empty list passed through just return empty list*)
     []
 else 
   let rec loop int_or_string current_int current_string acc = 
     match int_or_string with
-      | [] ->  (*If the int_or_string list empty *)
+      | [] ->  (*If the int_or_string list empty *) (*Have to reverse accordingly*)
         if current_int <> [] then (*Append any remaining items either in current_int or current_string list*)
           reverse_list(IntList (reverse_list(current_int)) :: acc )
         else if current_string <> [] then 
@@ -48,10 +48,10 @@ else
           
         else 
           reverse_list(acc)
-      | h :: t -> 
+      | h :: t -> (*Checking if the head is an Int or String*)
           match h with 
             | Int i -> 
-              if current_int = [] && current_string <> [] then
+              if current_int = [] && current_string <> [] then (*Different cases that act accordingly *)
                   loop t (i :: current_int) [] (StringList (reverse_list(current_string)) :: acc)
               else 
                 loop t (i :: current_int) [] acc
@@ -60,7 +60,7 @@ else
                 loop t [] (s :: current_string) (IntList (reverse_list(current_int)) :: acc)
               else 
                 loop t [] (s :: current_string) acc
-    in loop l [] [] [];;
+    in loop l [] [] [];; (*The input to the recursive function*)
               
 
                  
