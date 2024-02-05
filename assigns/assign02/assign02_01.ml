@@ -42,23 +42,22 @@ else
     match int_or_string with
       | [] ->  (*If the int_or_string list empty *)
         if current_int <> [] then (*Append any remaining items either in current_int or current_string list*)
-          IntList (current_int) :: acc 
-
+          reverse_list(IntList (reverse_list(current_int)) :: acc )
         else if current_string <> [] then 
-          StringList (current_string) :: acc 
-
+          reverse_list(StringList (reverse_list(current_string)) :: acc) 
+          
         else 
-          acc
+          reverse_list(acc)
       | h :: t -> 
           match h with 
             | Int i -> 
               if current_int = [] && current_string <> [] then
-                  loop t (i :: current_int) [] (StringList (current_string) :: acc)
+                  loop t (i :: current_int) [] (StringList (reverse_list(current_string)) :: acc)
               else 
                 loop t (i :: current_int) [] acc
             | String s -> 
               if current_string = [] && current_int <> [] then
-                loop t [] (s :: current_string) (IntList (current_int) :: acc)
+                loop t [] (s :: current_string) (IntList (reverse_list(current_int)) :: acc)
               else 
                 loop t [] (s :: current_string) acc
     in loop l [] [] [];;
