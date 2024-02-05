@@ -22,12 +22,12 @@ type int_or_string
   = Int of int
   | String of string
 
-  let reverse_list revList =
-    let rec reverseFormList rev acc =
-      match rev with
-      | [] -> acc
-      | h :: t -> reverseFormList t (h :: acc)
-    in reverseFormList revList [];;
+let reverse_list revList =
+  let rec reverseFormList rev acc =
+    match rev with
+    | [] -> acc
+    | h :: t -> reverseFormList t (h :: acc)
+  in reverseFormList revList [];;
   
 
 
