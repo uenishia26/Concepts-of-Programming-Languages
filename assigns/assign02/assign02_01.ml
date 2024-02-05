@@ -22,11 +22,12 @@ type int_or_string
   = Int of int
   | String of string
 
+(*Helper function *)
 let reverse_list revList =
-  let rec reverseFormList rev acc =
+  let rec reverseFormList rev newList =
     match rev with
-    | [] -> acc
-    | h :: t -> reverseFormList t (h :: acc)
+    | [] -> newList
+    | h :: t -> reverseFormList t (h :: newList)
   in reverseFormList revList [];;
   
 
@@ -34,29 +35,32 @@ let reverse_list revList =
 
 
 let convert (l : int_or_string list) : int_list_or_string_list list =
+  if l = [] then 
+    []
+else 
   let rec loop int_or_string current_int current_string acc = 
     match int_or_string with
       | [] ->  (*If the int_or_string list empty *)
         if current_int <> [] then (*Append any remaining items either in current_int or current_string list*)
-          reverse_list (IntList (current_int) :: acc )
+          IntList (current_int) :: acc 
 
         else if current_string <> [] then 
-          reverse_list (StringList (current_string) :: acc )
+          StringList (current_string) :: acc 
 
         else 
-          reverse_list (acc)
+          acc
       | h :: t -> 
           match h with 
             | Int i -> 
               if current_int = [] && current_string <> [] then
-                  loop t (reverse_list(i :: current_int)) [] (StringList (current_string) :: acc)
+                  loop t (i :: current_int) [] (StringList (current_string) :: acc)
               else 
-                loop t (reverse_list(i :: current_int)) [] acc
+                loop t (i :: current_int) [] acc
             | String s -> 
               if current_string = [] && current_int <> [] then
-                loop t [] (reverse_list(s :: current_string)) (IntList (current_int) :: acc)
+                loop t [] (s :: current_string) (IntList (current_int) :: acc)
               else 
-                loop t [] (reverse_list(s :: current_string)) acc
+                loop t [] (s :: current_string) acc
     in loop l [] [] [];;
               
 
