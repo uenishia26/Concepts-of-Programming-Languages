@@ -43,5 +43,5 @@ let recs_by_ingrs (l : recipe list) (s : ingr list) : recipe list =
       in 
       if iterateIngredients r.ingrs = true then r :: recipe_filter rs (*If true, we want to add the recipe else don't*)
       else recipe_filter rs 
-  in recipe_filter l k;;
+  in recipe_filter l ;;
 
