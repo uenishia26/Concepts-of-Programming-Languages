@@ -34,43 +34,37 @@ type temp
   = Hot of int
   | Icy of int
 
-let isComptable cv toNewList =  (*cv = int value of currentHead; toNewList = the newList that its checking cv against*)
+let canAdd cv toNewList =  (*cv = int value of currentHead; toNewList = the newList that its checking cv against*)
   match toNewList with
   | [] -> true
-  | head :: tail -> 
+  | head :: tail -> (*Match the top value of the toNewList with cv number*)
       match head with 
         | Hot hint -> 
-            if cv <> hint then true else false 
+            if cv = hint then false else true 
         | Icy iint -> 
-            if cv <> iint then true else false
+            if cv = iint then false else true
+            let reduce (l : temp list) : temp list =
+              let rec reducer iterate_list newList =
+                match iterate_list with
+                | [] -> List.rev newList (* Reverse the newList to maintain original order before returning *)
+                | head :: tail ->
+                    (match head with
+                     | Hot hint ->
+                         (match newList with
+                          | [] -> reducer tail (head :: newList) (* If newList is empty, just add the head *)
+                          | Icy iint :: t when hint = iint -> reducer tail t (* Cancel out Hot and Icy with same value *)
+                          | _ -> reducer tail (head :: newList)) (* Default case: add the head to newList *)
+                     | Icy iint ->
+                         (match newList with
+                          | [] -> reducer tail (head :: newList) (* If newList is empty, just add the head *)
+                          | Hot hint :: t when iint = hint -> reducer tail t (* Cancel out Icy and Hot with same value *)
+                          | _ -> reducer tail (head :: newList))) (* Default case: add the head to newList *)
+              in
+              reducer l [];;
 
 
 
 
-let reduce (l : temp list) : temp list =
-  let rec reducer iterate_list newList = (*cotains the passed int value and the newList being created through recusion*)
-    match iterate_list with (*We iterate through every item of the temp list l*)
-      | [] -> newList (*If empty we reached base case *)
-      | head :: tail -> (*Look at the first item *)
-      match head with
-        | Hot hint -> 
-          if isComptable hint newList then reducer tail (head :: newList)
-          else
-            match newList with  (*nh = newList Head; nt = newList Tail *)
-              | nh :: nt -> reducer tail nt  (*Just don't add the head will remove the top item*)
-              | [] -> reducer tail (newList 
-            
-        | Icy iint -> 
-          if isComptable iint newList then reducer tail (head :: newList)
-          else
-          match newList with  (*nh = newList Head; nt = newList Tail *)
-            | nh :: nt -> reducer tail nt  (*Just don't add the head will remove the top item*)
-            | [] -> reducer tail newList 
-          
-
-
-
-  in reducer l [];; 
           
  
         
