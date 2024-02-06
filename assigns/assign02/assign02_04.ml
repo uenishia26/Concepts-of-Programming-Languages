@@ -53,7 +53,7 @@ let canAdd cv toNewList =  (*cv = int value of currentHead; toNewList = the newL
                          (match newList with
                           | [] -> reducer tail (head :: newList) (* If newList is empty, just add the head *)
                           | Icy iint :: t when hint = iint -> reducer tail t (* Cancel out Hot and Icy with same value *)
-                          | _ -> reducer tail (head :: newList)(* Default case: add the head to newList *)
+                          | _ -> reducer tail (head :: newList)(* Default case: When its neither just add the head to newList *)
                           ) 
                      | Icy iint ->
                          (match newList with
