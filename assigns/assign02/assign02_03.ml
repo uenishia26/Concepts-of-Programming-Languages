@@ -64,7 +64,7 @@ let update_recent (u : user) (time : int) (stale : int) : user =
         loopRecentPost t (h :: remainingRecentPosts) moveToOldPosts  (* Keep in recentPosts *)
   in
   let (remainingRecentPosts, postsToMoveToOld) = loopRecentPost u.recent_posts [] [] in
-  let newOldPosts = postsToMoveToOld @ List.rev u.old_posts in (* Directly append using @ *)
+  let newOldPosts = postsToMoveToOld @ u.old_posts in (* Directly append using @ *)
   
 
   { u with
