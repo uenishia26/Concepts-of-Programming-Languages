@@ -55,10 +55,31 @@ type user = {
 }
 
 let update_recent (u : user) (time : int) (stale : int) : user =
-  assert false (* TODO *)
+  let rec loopRecentPost recentPosts remainingRecentPosts moveToOldPosts =
+    match recentPosts with
+    | [] -> (List.rev remainingRecentPosts, List.rev moveToOldPosts) (* Reverse to maintain order *)
+    | h :: t when (time - h.timestamp) >= stale ->
+        loopRecentPost t remainingRecentPosts (h :: moveToOldPosts)  (* Move to oldPosts *)
+    | h :: t ->
+        loopRecentPost t (h :: remainingRecentPosts) moveToOldPosts  (* Keep in recentPosts *)
+  in
+  let (remainingRecentPosts, postsToMoveToOld) = loopRecentPost u.recent_posts [] [] in
+  let newOldPosts = List.rev postsToMoveToOld @ u.old_posts in (* Directly append using @ *)
+  
+
+  { u with
+    old_posts = newOldPosts;
+    recent_posts = remainingRecentPosts
+  }
+
+
+
+ (* let newUser = {u with old_posts = moveToOldPost :: u.old_posts; 
+  recent_posts = remainInRecentList } *)
 
 let p t = {title="";content="";timestamp=t}
-let mk op rp = {
+
+let mk op rp = { (*Old Post and Recent Post*)
   username = "" ;
   email = "" ;
   time_joined = 0 ;
