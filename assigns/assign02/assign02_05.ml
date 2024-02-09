@@ -42,9 +42,44 @@
 type dir = N | S | E | W
 
 type point = {
-  x : int ;
-  y : int ;
+  x: int;
+  y: int;
 }
 
-let rec all_paths (len : int) (stp : point) (endp : point) : (dir * int) list list =
-  assert false (* TODO *)
+let rec all_paths (len: int) (stp: point) (endp: point): (dir * int) list list =
+  let rec move (p: point) d dx dy endp len path =
+
+    if len = 0 then
+      if p = endp then
+        [path]
+      else
+        []
+    else
+      let new_point = { x = p.x + dx; y = p.y + dy } in
+      direct new_point endp (len - 1) (path @ [(d, 1)])
+
+  and direct str endp len path =
+    if len = 0 then
+      if str = endp then
+        [path]
+      else
+        []
+    else
+      let north = move str N 0 1 endp len path in
+      let south = move str S 0 (-1) endp len path in
+      let east = move str E 1 0 endp len path in
+      let west = move str W (-1) 0 endp len path in
+      let allMoves = north @ south @ east @ west in
+      let rec combine_dir acc lst =
+        match lst with
+        | (d1, n1) :: (d2, n2) :: tl when d1 = d2 ->
+            combine_dir acc ((d1, n1 + n2) :: tl) 
+        | hd :: tl -> combine_dir (hd :: acc) tl
+        | [] -> List.rev acc
+      in
+      let rec combine lst = 
+        match lst with 
+        |[] -> []
+        |h :: t -> (combine_dir [] h) :: t 
+      in
+      combine allMoves
