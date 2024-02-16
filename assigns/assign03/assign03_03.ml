@@ -39,7 +39,7 @@
    Hint: Take a look at the textbook section on association lists
    (they are a simple implementation of a dictionary-like data
    structure), as well as the function List.assoc_opt.
-
+ 
 *)
 
 type bexp =
@@ -49,4 +49,28 @@ type bexp =
   | Or of bexp * bexp
 
 let eval (v : (string * bool) list) (e : bexp) : bool option =
-  assert false (* TODO *)
+  let rec recurse bexp =
+    match bexp with 
+      | Var char -> 
+          List.assoc_opt char v
+      | Not negate -> 
+        (match recurse negate with
+          | Some value -> Some (not value)
+          | None -> None )
+
+      | And (and1, and2) -> 
+        (match (recurse and1, recurse and2) with
+          | (Some true, Some true) -> Some true
+          | (Some false, _) | (_, Some false) -> Some false
+          | _ -> None)
+
+      | Or (or1, or2) -> 
+          (match (recurse or1, recurse or2) with 
+          | (Some true, Some true) -> Some true
+          | (Some true,_) | (_, Some true) -> Some true
+          | _ -> None )
+      in recurse e 
+
+
+
+  
