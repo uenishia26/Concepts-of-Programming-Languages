@@ -43,4 +43,27 @@ type 'a forklist
   | Fork of 'a * 'a forklist * 'a forklist
 
 let delay_cons (f : int forklist) : int forklist =
-  assert false (* TODO *)
+  let rec recurse forklist = 
+    match forklist with 
+      | Nil -> Nil 
+      | Cons (prevnode, restBranch) -> (*Current Node, restOfStructure*)
+        (match restBranch with 
+          | Nil -> Cons(prevnode, restBranch) (*"If nill, just retun the cons list as i cause its already tailed"*)
+          | Cons (nodeExist, branchExist) -> Cons(prevnode, Cons(nodeExist, recurse branchExist))
+          | Fork (node, left, right) -> 
+              Fork(node, recurse (Cons(node, left)), right)
+        )
+      | Fork(node, left, right) -> Fork(node, recurse left, recurse right)
+    in recurse f 
+      
+        
+          
+
+
+
+        
+            
+                
+
+     
+  
