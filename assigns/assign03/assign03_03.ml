@@ -60,14 +60,12 @@ let eval (v : (string * bool) list) (e : bexp) : bool option =
 
       | And (and1, and2) -> 
         (match (recurse and1, recurse and2) with
-          | (Some true, Some true) -> Some true
-          | (Some false, _) | (_, Some false) -> Some false
+          | (Some valand1, Some valand2) -> Some (valand1 && valand2)
           | _ -> None)
 
       | Or (or1, or2) -> 
           (match (recurse or1, recurse or2) with 
-          | (Some true, Some true) -> Some true
-          | (Some true,_) | (_, Some true) -> Some true
+          | (Some valor1, Some valor2) -> Some (valor1 || valor2)
           | _ -> None )
       in recurse e 
 
