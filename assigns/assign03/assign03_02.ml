@@ -49,7 +49,7 @@ let delay_cons (f : int forklist) : int forklist =
       | Cons (prevnode, restBranch) -> (*Current Node, restOfStructure*)
         (match restBranch with 
           | Nil -> (Cons(prevnode, recurse restBranch)) (*"If nill, just retun the cons list as i cause its already tailed"*)
-          | Cons (nodeExist, branchExist) -> Cons(prevnode, recurse (Cons(nodeExist,branchExist)))
+          | Cons (nodeExist, branchExist) -> Cons(prevnode, Cons(nodeExist, recurse branchExist))
           | Fork (node, left, right) -> 
               Fork(node, recurse (Cons(prevnode, left)), right)
         )
