@@ -44,7 +44,7 @@
 
    ************
 
-   Task 2: Implement the function `transpose` which, given
+   Task 2: Implement the function `transpose` which, given Worked with Moryan 
 
      m : a matrix
 
@@ -116,10 +116,75 @@ type 'a matrix = {
 }
 
 let mkMatrix (rs : 'a list list) : ('a matrix, error) result =
-  assert false (* TODO *)
+  let rec row_len hd rs =
+    match rs with
+    | [] -> true 
+    | row :: rest ->
+      List.length row = List.length hd && row_len hd rest
+  in
+  match rs with
+  | [] -> Error ZeroRows
+  | hd :: _ ->
+    (match hd with
+     | [] -> Error ZeroCols
+     | _ -> if not (row_len hd rs) then Error UnevenRows
+       else Ok { num_rows = List.length rs; num_cols = List.length hd; rows = rs }
+    )
 
-let transpose (m : 'a matrix) : 'a matrix =
-  assert false (* TODO *)
-
+let transpose (m : 'a matrix): 'a matrix  =
+  let rec first_column (m : 'a list list): 'a list  =
+    match m with
+    | [] -> []
+    | h :: t -> 
+      match h with
+      | [] -> []
+      | h1 :: t1 -> 
+        match first_column t with
+        | [] -> [h1]
+        | t2 -> h1 :: t2
+  and rest_columns (m : 'a list list): 'a list list =
+    match m with
+    | [] -> []
+    | h :: t -> 
+      match h with
+      | [] -> []
+      | h1 :: t1 -> 
+        match rest_columns t with
+        | [] -> [t1]
+        | t2 -> t1 :: t2
+  in
+  let rec helper ret matrix =
+    match first_column matrix with
+    | [] -> List.rev ret
+    | col ->
+      let new_matrix = rest_columns matrix in
+      helper (col :: ret) new_matrix
+  in 
+  let transposing m =
+  match m.rows with
+  | [] -> {num_rows=0;num_cols=0; rows=[]}
+  | _ -> {num_rows= m.num_cols; num_cols = m.num_rows; rows=helper [] m.rows}
+  in transposing m  
+    
 let multiply (m : float matrix) (n : float matrix) : (float matrix, error) result =
-  assert false (* TODO *)
+  let rec dot_product (a: float list) (b: float list): float = 
+    match (a,b) with
+    | ((h1::t1),(h2::t2)) -> (h1 *. h2) +. dot_product t1 t2
+    | (_,_) -> 0.
+  in
+  let rec mv_mul (a: float list list) (b: float list): float list =
+    match a with
+    | [] -> []
+    | (h::t) -> dot_product h b :: mv_mul t b
+  in
+  let rec mul (a: float list list) (b: float list list) (c: float list list): float list list = 
+    match b with
+      | [] -> List.rev c
+      | h::t -> 
+      let new_matrix = mv_mul a h in mul a t (new_matrix :: c)
+  in 
+  let multiplication (a: float matrix) (b: float matrix): (float matrix, error) result = 
+    if (a.rows = [] && b.rows = []) then Ok {num_rows=0;num_cols=0; rows = []}
+    else if (a.num_cols <> b.num_rows) then Error MulMismatch
+    else Ok (transpose {num_rows=b.num_cols;num_cols=a.num_rows; rows = mul a.rows (transpose b).rows []})
+  in multiplication m n 
