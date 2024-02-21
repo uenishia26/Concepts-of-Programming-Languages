@@ -53,4 +53,34 @@ let walks
     (g : 'a -> 'a -> bool)
     (len : int)
     (paths_starts : (('a -> 'a) * 'a) list) : 'a list =
-  assert false (* TODO *)
+    let rec applyLenTimes func startPoint loopCounter pathList = (*Takes the pairs, counter, pathList generated*)
+
+    if(len = 0) then
+      let rec recurse counter zeroList  = 
+        if(counter = (List.length paths_starts -1 )) then zeroList
+        else 0 :: zeroList 
+      in recurse 0 []      
+    else
+      if(loopCounter = len) then pathList
+      else 
+        applyLenTimes func (func startPoint) (loopCounter+1) (pathList @ [func startPoint])
+    in 
+    let rec isValidPath path = 
+      match path with 
+      | [_] | [] -> true
+      | p1 :: p2 :: tail -> g p1 p2 && isValidPath (p2 :: tail)
+    in 
+     let paths = List.map (fun(func, startPoint) -> 
+      let path = applyLenTimes func startPoint 0 [] in
+        (path, isValidPath path )) paths_starts in
+      List.filter_map (fun (path, isValid) -> 
+        if isValid then Some (List.hd(List.rev path))
+        else
+          None) paths
+    
+
+
+      
+
+
+
