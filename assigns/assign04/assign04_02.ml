@@ -49,23 +49,22 @@
    let _ = assert (walks g2 6 [(p1, 5); (p2, 11); (p3, -10)] = [2])
 *)
 
-
-let rec recuseFunc typeFunc startPoint currentLength len newList= 
-  if(currentLength = len) then
-    newList
+let rec recuseFunc typeFunc startPoint len newList= 
+  if(len < 0) then
+    List.rev(newList)
   else 
-    recuseFunc typeFunc (typeFunc startPoint) (currentLength+1) len (typeFunc startPoint :: newList)
+    recuseFunc typeFunc (typeFunc startPoint) (len-1) (startPoint :: newList)
 
 
   let walks
     (g : 'a -> 'a -> bool)
     (len : int)
-    (paths_starts : (('a -> 'a) * 'a) list) : 'a list =
+    (paths_starts : (('a -> 'a) * 'a) list) : ('a list) =
     let funcAndVal tuple =
       match tuple with
-        | (func, x) -> recuseFunc func x 0 len []
+        | (func, x) -> recuseFunc func x len []
     in
-    let sumPath = List.map funcAndVal paths_starts in
+    let sumPath =  List.map funcAndVal paths_starts in
     let rec filterFunc doubleList = 
       match doubleList with  
         | [] -> true
@@ -73,7 +72,7 @@ let rec recuseFunc typeFunc startPoint currentLength len newList=
         | h1 :: [] -> true
     in 
     let result = List.filter filterFunc sumPath 
-    in List.map (fun (lst) -> List.hd lst) result
+    in List.map (fun (lst) -> List.hd(List.rev lst)) result
 
     (* [[5; 4; 3; 2; 1]; [-5; -4; -3; -2; -1]; [10; 8; 6; 4; 2]]*)
 
