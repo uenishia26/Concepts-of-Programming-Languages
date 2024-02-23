@@ -75,25 +75,52 @@
    Example:
    let _ = assert (poly_mult [1;2;3] [4;5] = [4;13;22;15])
    let _ = assert (poly_mult [4;5] [1;2;3] = [4;13;22;15])
-   (* ( 1 + 2x + 3x^2 ) ( 4 + 5x ) = 4 + 13x + 22x^2 + 15x^3 *)
+   (* ( 1 + 2x + 3x^2 ) ( 4 + 5x ) = 4 + 13x + 22x^2 + 15x^3 *) Collaborator with Moryan 
 *)
 
-let rec map2 (f : 'a -> 'b -> 'c) (l : 'a list) (r : 'b list) : 'c list =
-  assert false (* TODO *)
+let rec map2 (func : 'a -> 'b -> 'c) (list_a : 'a list) (list_b : 'b list) : 'c list =
+  match list_a, list_b with
+  | [], _ | _, [] -> []
+  | head_a :: tail_a, head_b :: tail_b -> func head_a head_b :: map2 func tail_a tail_b
 
-let consecutives (len : int) (l : 'a list) : 'a list list =
-  assert false (* TODO *)
+let rec sublst (length : int) (list : 'a list) : 'a list  =
+  match length with
+  | 0 -> []
+  | len when List.length list < len -> []
+  | _ -> 
+      match list with
+      | [] -> []
+      | head :: tail -> head :: sublst (length - 1) tail
+  
+let consecutives (size : int) (sequence : 'a list) : 'a list list =
+  if List.length sequence = 0 then [[]]
+  else 
+    let rec consecutive_loop len seq =
+      match seq with
+      | [] -> []
+      | _ :: tail -> 
+          if (sublst size seq) = [] then consecutive_loop size tail
+          else sublst size seq :: consecutive_loop size tail 
+    in
+    consecutive_loop size sequence
 
 let list_conv
-    (f : 'a list -> 'b list -> 'c)
-    (l : 'a list)
-    (r : 'b list) : 'c list =
-  List.map (f l) (consecutives (List.length l) r)
+    (func : 'a list -> 'b list -> 'c)
+    (list1 : 'a list)
+    (list2 : 'b list) : 'c list =
+  List.map (func list1) (consecutives (List.length list1) list2)
 
-let poly_mult_helper (u : int list) (v : int list) : int =
-  assert false (* TODO *)
+let poly_mult_helper (list_u : int list) (list_v : int list) : int =
+  let rec poly_loop loop_u loop_v =
+    match loop_u, loop_v with
+    | _, [] | [], _ -> 0
+    | head_u :: tail_u, head_v :: tail_v -> head_u * head_v + poly_loop tail_u tail_v
+  in
+  poly_loop list_u (List.rev list_v)
 
-let poly_mult (p : int list) (q : int list) : int list =
-  let padding = List.init (List.length p - 1) (fun _ -> 0) in
-  let padded_q = padding @ q @ padding in
-  list_conv poly_mult_helper p padded_q
+let poly_mult (poly_p : int list) (poly_q : int list) : int list =
+  let pad_length = List.init (List.length poly_p - 1) (fun _ -> 0) in
+  let padded_poly_q = pad_length @ poly_q @ pad_length in
+  list_conv poly_mult_helper poly_p padded_poly_q
+
+
