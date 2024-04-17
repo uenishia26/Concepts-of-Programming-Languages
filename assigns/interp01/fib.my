@@ -1,0 +1,30 @@
+def ISNEG
+  0 swap <
+;
+
+def DECR
+  1 swap -
+;
+
+def FIBHELP
+  X 1 < ?
+    C P + |> A
+    C |> P
+    A |> C
+    X #DECR |> X
+    A
+    #FIBHELP
+  ;
+;
+
+def FIB
+  |> X
+  X dup #ISNEG ? drop 1 0 - ;
+  X dup 0 = ? drop 0;
+  X dup 1 = ? drop 1;
+  0 |> P
+  1 |> C 
+  #FIBHELP
+;
+
+4 #FIB .
