@@ -131,7 +131,7 @@ and value
 type record =
   { id : int
   ; local : bindings
-  ; caller_def_id : int
+  ; called_def_id : int
   ; return_prog : program
   }
 
@@ -183,11 +183,45 @@ let parse_comment =
 let parse_debug =
   char '"' >> many (satisfy ((<>) '"')) << char '"' >|= implode
 
+  let parse_trace =
+    map (fun x -> Trace) (keyword "." << ws)
+  
+  
+  let parse_and =
+    map (fun x -> And) (keyword "&&" << ws)
+  let parse_or =
+    map (fun x -> Or) (keyword "||" << ws)
+  let parse_not =
+    map (fun x -> Not) (keyword "~" << ws)
+  let parse_add =
+    map (fun x -> Add) (keyword "+" << ws)
+  let parse_mul =
+    map (fun x -> Mul) (keyword "*" << ws)
+  let parse_div =
+    map (fun x -> Div) (keyword "/" << ws)
+  let parse_eq =
+    map (fun x -> Eq) (keyword "=" << ws)
+  let parse_lt =
+    map (fun x -> Lt) (keyword "<" << ws)
+  let parse_bind =
+    map (fun id -> Bind (id)) (keyword "|>" >> parse_ident << ws)
+  let parse_call =
+    map (fun id -> Call) (keyword "#" << ws)
+  let parse_return =
+    map (fun id -> Return) (keyword "Return" << ws)
+  let parse_const =
+    (parse_bool >|= (fun b -> Push (Bool b))) <|> (parse_int >|= (fun b -> Push (Num b)))
+  
+
 let ws = many (ws >> parse_comment) >> ws
 let keyword w = str w << ws
 
 let rec parse_com () =
-  let parse_fun = fail (* TODO *)
+  let parse_fun = 
+    let* _ = keyword ":" in
+    let* funBody = parse_prog_rec () in
+    let* _ = char ';' in 
+    pure (Fun funBody);
   in
   let parse_if =
     let* _ = keyword "?" in
@@ -212,6 +246,19 @@ let rec parse_com () =
     ; parse_if
     ; parse_ident >|= (fun s -> Fetch s)
     ; parse_debug >|= (fun s -> Debug s)
+    ; parse_bind
+    ; parse_not
+    ; parse_lt
+    ; parse_eq
+    ; parse_call
+    ; parse_return
+    ; parse_const
+    ; parse_trace
+    ; parse_add
+    ; parse_mul
+    ; parse_div
+    ; parse_and
+    ; parse_or
     ]
 and parse_prog_rec () =
   many (rec_parser parse_com << ws)
@@ -220,28 +267,134 @@ let parse_prog = parse (ws >> parse_prog_rec ())
 
 (* FETCHING AND UPDATING *)
 
-(* fetch the value of `x` in the environment `e` *)
-let fetch_env e x = None (* TODO *)
+(* fetchicng the value of x in Enviroment*)
+let rec fetch_env envir x = 
+  match envir with
+    | Global glob -> (
+      let rec fetch_global glob =
+        match glob with
+        | [] -> None
+        | (vars, values) :: tails when x = vars -> Some values
+        |  _ :: tails  -> fetch_global tails in fetch_global glob
+      )
+    | Local (lr,le) -> (
+      if local_id envir <> lr.id then fetch_env le x else
+        let rec fetch_local lr =  
+          match lr with
+          | [] -> fetch_env le x
+          | (vars, values) :: tails when x = vars -> Some values
+          | _ :: tails -> fetch_local tails in fetch_local lr.local
+      )
 
-let rec update_env e x v = Global [] (* TODO *)
+let rec update_env envir x v = 
+  match envir with 
+  | Local (recrd, envi) -> Local ({ recrd with local = (x, v) :: recrd.local }, envi)
+  | Global binds -> Global ((x, v) :: binds)
 
 (* EVALUTION *)
 
-(* make the panic configuration given a configuration *)
+(* panic configuration given a configuration *)
 let panic (_, _, t, _) msg = [], Global [], ("panic: " ^ msg) :: t, []
 
-let eval_step (c : stack * env * trace * program) =
-  match c with
-  (* Push *)
+let rec merge b l = 
+  match l with
+  | [] -> b
+  | hd :: tl -> if List.mem hd tl then merge b tl else merge (hd::b) tl
+
+let rec eval_step (c : stack * env * trace * program) =
+  match c with 
+  (* This is for Push *)
   | s, e, t, Push c :: p -> Const c :: s, e, t, p
-  (* Trace *)
+
+  (* This is for Trace *)
   | v :: s, e, t, Trace :: p -> s, e, to_string v :: t, p
-  | [], _, _, Trace :: _ -> panic c "stack underflow (. on empty)"
-  (* Add *)
+  | [], _, _, Trace :: _ -> panic c "stack underflow"
+
+  (* This is for Add *)
   | Const (Num m) :: Const (Num n) :: s, e, t, Add :: p -> Const (Num (m + n)) :: s, e, t, p
-  | _ :: _ :: _, _, _, Add :: _ -> panic c "type error (+ on non-integers)"
-  | _ :: [], _, _, Add :: _ -> panic c "stack underflow (+ on single)"
-  | [], _, _, Add :: _ -> panic c "stack underflow (+ on empty)"
+  | _ :: _ :: _, _, _, Add :: _ -> panic c "type error"
+  | _ :: [], _, _, Add :: _ -> panic c "stack underflow"
+  | [], _, _, Add :: _ -> panic c "stack underflow"
+
+  (* This is for Multiply *)
+  | Const (Num m) :: Const (Num n) :: s, e, t, Mul :: p -> Const (Num (m * n)) :: s, e, t, p
+  | _ :: _ :: _, _, _, Mul :: _ -> panic c "type error"
+  | _ :: [], _, _, Mul :: _ -> panic c "stack underflow"
+  | [], _, _, Mul :: _ -> panic c "stack underflow"
+  (* This is for Divide *)
+  | Const (Num m) :: Const (Num n) :: s, e, t, Div :: p -> Const (Num (m / n)) :: s, e, t, p
+  | _ :: Const (Num 0) :: _, _, _, Div :: _ -> panic c "div by zero is not allowed"
+  | _ :: _ :: _, _, _, Div :: _ -> panic c "type error"
+  | _ :: [], _, _, Div :: _ -> panic c "stack underflow"
+  | [], _, _, Div :: _ -> panic c "stack underflow"
+
+  (* This is for And *)
+  | Const (Bool m) :: Const (Bool n) :: s, e, t, And :: p -> Const (Bool (m && n)) :: s, e, t, p
+  | _ :: _ :: _, _, _, And :: _ -> panic c "type error"
+  | _ :: [], _, _, And :: _ -> panic c "stack underflow"
+  | [], _, _, And :: _ -> panic c "stack underflow"
+
+  (* This is for Or *)
+  | Const (Bool m) :: Const (Bool n) :: s, e, t, Or :: p -> Const (Bool (m || n)) :: s, e, t, p
+  | _ :: _ :: _, _, _, Or :: _ -> panic c "type error"
+  | _ :: [], _, _, Or :: _ -> panic c "stack underflow"
+  | [], _, _, Or :: _ -> panic c "stack underflow"
+
+  (* This is for Not *)
+  | Const (Bool n) :: s, e, t, Not :: p -> Const (Bool (not n)) :: s, e, t, p
+  | _ :: _ , _, _, Not :: _ -> panic c "type error"
+  | [], _, _, Not :: _ -> panic c "stack underflow"
+
+  (*This is for Less Than *)
+  | Const (Num m) :: Const (Num n) :: s, e, t, Lt :: p -> Const (Bool (m < n)) :: s, e, t, p
+  | _ :: _ :: _, _, _, Lt :: _ -> panic c "type error"
+  | _ :: [], _, _, Lt :: _ -> panic c "stack underflow"
+  | [], _, _, Lt :: _ -> panic c "stack underflow"
+
+  (* This is for Equal *)
+  | Const (Num m) :: Const (Num n) :: s, e, t, Eq :: p -> Const (Bool (m = n)) :: s, e, t, p
+  | _ :: _ :: _, _, _, Eq :: _ -> panic c "type error"
+  | _ :: [], _, _, Eq :: _ -> panic c "stack underflow"
+  | [], _, _, Eq :: _ -> panic c "stack underflow"
+
+  (*This is for If-Else *)
+  | Const (Bool true) :: s, e, t, If(x,y) :: p -> s, e, t, x @ p
+  | Const (Bool false) :: s, e, t, If(x,y) :: p -> s, e, t, y @ p
+  | _ :: _ , _, _, If(x,y) :: _ -> panic c "type error"
+  | [], _, _, If(x,y) :: _ -> panic c "stack underflow"
+
+  (*This is for While *)
+  | s, e, t, While(x,y) :: p -> s, e, t, x @ (If (y @ [While (x,y)], []) :: p)
+
+  (* This is for Fetch *)
+  | s, e, t, Fetch x :: p ->
+    (match fetch_env e x with
+    | None -> panic c "varible does not exist in the environment"
+    | Some v -> v :: s, e, t, p)
+
+  (* This is for Bind *)
+  | v :: s, e, t, Bind x :: p -> s, update_env e x v, t, p
+  | [], e, t, Bind x :: p -> panic c "stack underflow"
+
+  (* This is for Fun *)
+  | s, e, t, Fun func :: p -> Clos ({def_id = local_id e;captured=[];prog=func;}) :: s, e, t, p
+
+  (* This is for Call *)
+  | Clos ({def_id=i;captured=b;prog=q;}) :: s, e, t, Call :: p -> s, Local ({id=(local_id e) + 1;local=b;called_def_id=i;return_prog=p}, e), t, q
+  | [], e, t, Call :: p -> panic c "stack underflow"
+
+  (* This is for Return *)
+  | [Clos ({def_id=i;captured=b;prog=q;})], Local (r, le), t, Return :: p when i = r.id -> [Clos ({def_id=r.called_def_id;captured= merge b r.local;prog=q;})], le, t, r.return_prog
+  | [Clos ({def_id=i;captured=b;prog=q;})], Local (r, le), t, Return :: p when i <> r.id -> [Clos ({def_id=i;captured= b;prog=q;})], le, t, r.return_prog
+  | [x], Local (r, le), t, Return :: p -> [x], le, t, r.return_prog
+  | [], Local (r, le), t, Return :: p -> [], le, t, r.return_prog
+  | [], Local (r, le), t, _ -> [], le, t, r.return_prog
+  | x :: y :: s, Local (r, le), t, Return :: p -> panic c "stack underflow"
+  | x :: s, Local (r, le), t, _ -> panic c "stack underflow"
+  | s, Global g, t, Return :: p -> panic c "stack underflow"
+
+  (*Debug*)
+  | s, e, t, Debug m :: p -> s, e, m::t, p
   | _ -> assert false (* TODO *)
 
 let rec eval c =
@@ -276,6 +429,6 @@ let main () =
   | None -> print_endline "Parse Error"
   | Some t -> print_trace t
 
-(* let _ = main () *)
+let _ = main ()
 
 (* END OF FILE *)
