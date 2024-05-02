@@ -510,9 +510,91 @@ type lexpr
   | App of lexpr * lexpr
   | Trace of lexpr
 
-let desugar (p : top_prog) : lexpr = Unit (* TODO *)
-let translate (e : lexpr) : stack_prog = [] (* TODO *)
-let serialize (p : stack_prog) : string = "" (* TODO *)
+let rec helpDesugar (ex : expr) : lexpr =
+  match ex with
+    | Bool b -> Bool b
+    | Var v -> Var v 
+    | Unit -> Unit
+    | Num n -> Num n
+    | Ife (if1, if2, if3) -> Ife (helpDesugar if1, helpDesugar  if2, helpDesugar  if3)
+    | App (app1, app2) -> App (helpDesugar app1, helpDesugar app2)
+    | Trace t -> Trace (helpDesugar t)
+    | Uop (uop1, uop2) -> Uop (uop1, helpDesugar uop2)
+    | Bop (bop1, bop2, bop3) -> Bop (bop1, helpDesugar bop2, helpDesugar bop3)
+    | Fun (f1, f2) -> 
+      (match f1 with
+      | [] -> helpDesugar f2
+      | [x] -> Fun (x, helpDesugar f2)
+      | x :: xs -> Fun (x, helpDesugar (Fun (xs, f2))))
+    | Let (l1, l2, l3, l4) -> App (Fun (l1, helpDesugar l4), helpDesugar (Fun(l2, l3)))
+let rec desugar (prog : top_prog) : lexpr =
+  match prog with
+    | [] -> Unit
+    | (name, args, exp) :: rest -> App (Fun (name, desugar rest), helpDesugar (Fun(args, exp)))
+
+let rec translate (e : lexpr) : stack_prog = 
+  match e with
+  | App (app1, app2) -> translate app2 @ translate app1 @ [Call]
+  | Fun (f1, f2) -> [Fun(f1, [Swap; Assign f1] @ translate f2 @ [Swap; Return])]
+  | Trace t -> translate t @ [Trace; Push Unit]
+  | Num n -> [Push (Num n)]
+  | Bool b -> [Push (Bool b)]
+  | Unit -> [Push Unit]
+  | Var id -> [Lookup id]
+  | Uop (uop1, uop2) -> 
+    (match uop1 with
+    | Neg -> translate uop2 @ [Push (Num 0); Add; Push (Num 0); Sub]
+    | Not -> translate uop2 @ [If ([Push (Bool false)], [Push (Bool true)])])
+  | Bop (bop1, bop2, bop3) ->
+    (match bop1 with
+    | And -> translate bop2 @ [If (translate bop3,[Push (Bool false)])]
+    | Or -> translate bop2 @ [If ([Push (Bool true)], translate bop3)]
+    | Lt -> translate bop3 @ [Push (Num 0); Add] @ translate bop2 @ [Lt]
+    | Gt -> translate bop2 @ [Push (Num 0); Add] @ translate bop3 @ [Lt]
+    | Add -> translate bop3 @ [Push (Num 0); Add] @ translate bop2 @ [Add]
+    | Sub -> translate bop3 @ [Push (Num 0); Add] @ translate bop2 @ [Sub]
+    | Mul -> translate bop3 @ [Push (Num 0); Add] @ translate bop2 @ [Mul]
+    | Div -> translate bop3 @ [Push (Num 0); Add] @ translate bop2 @ [Div]
+    | Lte -> translate (Uop (Not, Bop (Gt, bop2, bop3)))
+    | Gte -> translate (Uop (Not, Bop (Lt, bop2, bop3)))
+    | Eq -> translate (Bop (And, (Uop (Not, Bop (Gt, bop2, bop3))), (Uop (Not, Bop (Lt, bop2, bop3)))))
+    | Neq -> translate (Uop (Not, (Bop (And, (Uop (Not, Bop (Gt, bop2, bop3))), (Uop (Not, Bop (Lt, bop2, bop3)))))))) 
+  | Ife(i1, i2, i3) -> translate i1 @ [If (translate i2, translate i3)]
+let to_upper (l : ident) : string =
+  String.uppercase_ascii l
+
+let const_string (c : const) : string = 
+  match c with
+  | Num n -> string_of_int n
+  | Bool true -> "true"
+  | Bool false -> "false"
+  | Unit -> "unit"  
+let not_letter (c : char list) : string =
+  let rec loop cs: char list=
+    match cs with
+    | [] -> []
+    | x :: xs  when (is_upper_case x) -> x :: (loop xs)
+    | x :: xs -> 'K' :: loop xs
+  in 
+  implode (loop c)
+
+let rec serialize (p : stack_prog) : string = 
+  match p with
+  | [] -> ""
+  | Fun (f1, f2) :: rest -> "\n fun C begin " ^ serialize f2 ^ "\n end " ^ serialize rest
+  | If (i1, i2) :: rest -> " if " ^ serialize i1 ^ " else " ^ serialize i2 ^ " end " ^ serialize rest
+  | Push p :: rest -> " push " ^ const_string p ^ " " ^ serialize rest
+  | Lookup l :: rest -> " lookup A" ^ not_letter (explode (to_upper l)) ^ " "^ serialize rest
+  | Assign a :: rest -> " assign A" ^ not_letter (explode (to_upper a)) ^ " " ^ serialize rest
+  | Swap :: rest -> " swap " ^ serialize rest
+  | Trace :: rest -> "\n trace " ^ serialize rest
+  | Add :: rest -> " add " ^ serialize rest
+  | Sub :: rest -> " sub " ^ serialize rest
+  | Mul :: rest -> " mul " ^ serialize rest
+  | Div :: rest -> " div " ^ serialize rest
+  | Lt :: rest -> " lt " ^ serialize rest
+  | Call :: rest -> " call " ^ serialize rest
+  | Return :: rest -> " return " ^ serialize rest
 
 let compile (s : string) : string option =
   match parse_top_prog s with
@@ -522,3 +604,4 @@ let compile (s : string) : string option =
 (* ============================================================ *)
 
 (* END OF FILE *)
+(*Collaborator Moryan*)
